@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Query and Display Responses</title>
+    <style>
+        .response-box {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        .feedback {
+            margin-top: 15px;
+            text-align: right;
+        }
+        .feedback button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 5px;
+        }
+        .thumbs-up {
+            color: green;
+        }
+        .thumbs-down {
+            color: red;
+        }
+        #query-form {
+            margin-bottom: 20px;
+        }
+        #query-form input[type="text"] {
+            width: 80%;
+            padding: 8px;
+            font-size: 16px;
+        }
+        #query-form input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Form for submitting a query -->
+    <form id="query-form">
+        <input type="text" id="query-input" placeholder="Enter your query here..." required>
+        <input type="submit" value="Submit">
+    </form>
+
+    <!-- Container to display API responses -->
+    <div id="responses-container"></div>
+
+    <script>
+        // List of responses (simulating initial API response data)
+        let responses = [];
+
+        // Handle form submission to POST query
+        document.getElementById('query-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent page reload
+            const query = document.getElementById('query-input').value;
+
+            // Send POST request
+            fetch('https://example.com/api/query', { // Replace with your API endpoint
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Add response to responses list
+                responses.push([data.response]); // Assuming the response comes in {response: "..."}
+
+                // Re-render responses
+                renderResponses();
+
+                // Clear the input field
+                document.getElementById('query-input').value = '';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // Function to render the responses
+        function renderResponses() {
+            const container = document.getElementById('responses-container');
+            container.innerHTML = ''; // Clear previous responses
+
+            responses.forEach((responseList, index) => {
+                // Create a box for each response
+                const responseBox = document.createElement('div');
+                responseBox.classList.add('response-box');
+
+                // Add the response text to the box
+                const responseText = document.createElement('p');
+                responseText.textContent = responseList[0]; // Assuming single response per list
+                responseBox.appendChild(responseText);
+
+                // Create feedback buttons at the bottom
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.classList.add('feedback');
+
+                const thumbsUpBtn = document.createElement('button');
+                thumbsUpBtn.classList.add('thumbs-up');
+                thumbsUpBtn.innerHTML = '&#128077;'; // Unicode for thumbs up
+                thumbsUpBtn.addEventListener('click', () => handleFeedback(index, 'up'));
+
+                const thumbsDownBtn = document.createElement('button');
+                thumbsDownBtn.classList.add('thumbs-down');
+                thumbsDownBtn.innerHTML = '&#128078;'; // Unicode for thumbs down
+                thumbsDownBtn.addEventListener('click', () => handleFeedback(index, 'down'));
+
+                feedbackDiv.appendChild(thumbsUpBtn);
+                feedbackDiv.appendChild(thumbsDownBtn);
+
+                // Append the feedback div to the response box (at the bottom)
+                responseBox.appendChild(feedbackDiv);
+
+                // Append the box to the container
+                container.appendChild(responseBox);
+            });
+        }
+
+        // Handle feedback (thumbs up or down)
+        function handleFeedback(index, type) {
+            if (type === 'up') {
+                alert(`You liked response ${index + 1}`);
+            } else if (type === 'down') {
+                alert(`You disliked response ${index + 1}`);
+            }
+        }
+
+        // Render the initial responses (if any)
+        window.onload = renderResponses;
+    </script>
+
+</body>
+</html>
